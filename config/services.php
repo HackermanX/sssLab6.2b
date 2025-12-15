@@ -32,7 +32,7 @@ return [
     ],
 
     'steam' => [
-    'key' => env('STEAM_API_KEY'),
+    'key' => env('STEAM_API_KEY'), // might need it, if i come up with other ideas
     ],
 
 ];

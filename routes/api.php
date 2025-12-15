@@ -18,5 +18,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/steam/{appId}', [SteamController::class, 'specsById']);
-Route::get('/steam/search/{game}', [SteamController::class, 'specsByName']);
+use App\Http\Controllers\SteamController;
+
+Route::get('/steam/{appId}', fn($id) => 
+    response()->json(app(\App\Services\SteamService::class)->getRequirements($id))
+);
