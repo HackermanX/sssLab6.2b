@@ -18,7 +18,7 @@ return new class extends Migration
 
             $table->string("CPU");
             $table->string("RAM");
-            $table->string("Storage");
+            $table->string("STORAGE");
             $table->string("GPU");
 
             $table->timestamps();

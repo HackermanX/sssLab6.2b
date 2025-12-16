@@ -1,7 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\MyReqController;
+use Illuminate\Http\Request;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -16,3 +17,12 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+use App\Services\SteamService;
+
+Route::get('/steam/{appId}', function ($appId, SteamService $steamService) {
+    return response()->json($steamService->getRequirements($appId));
+});
+
+Route::get('/pc-reqs', [MyReqController::class, 'showForm'])->name('main.form');
+Route::post('/pc-reqs', [MyReqController::class, 'storeAndShow'])->name('main.store');

@@ -17,7 +17,6 @@ class SteamController extends Controller
             return response()->json(['error' => 'Game not found on Steam'], 404);
         }
 
-        // normalize to array in case service returns an object
         $data = is_array($specs) ? $specs : (is_object($specs) ? (array) $specs : []);
 
         $minRaw = $data['minimum_requirements'] ?? $data['minimumRequirements'] ?? null;

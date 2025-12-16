@@ -17,9 +17,3 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-
-use App\Http\Controllers\SteamController;
-
-Route::get('/steam/{appId}', fn($id) => 
-    response()->json(app(\App\Services\SteamService::class)->getRequirements($id))
-);
