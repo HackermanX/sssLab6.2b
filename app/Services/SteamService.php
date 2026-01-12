@@ -5,8 +5,67 @@ namespace App\Services;
 use App\Models\GameRequirement;
 use Illuminate\Support\Facades\Http;
 
+use App\Models\CPUbench;
+use App\Models\GPUbench;
+
 class SteamService
 {
+    // helpers
+    private function scoresFromParsed(?array $minParsed): array
+    {
+        if (!$minParsed) {
+            return [null, null, null];
+        }
+
+        $cpuText = $minParsed['processor'] ?? '';
+        $gpuText = $minParsed['graphics']  ?? '';
+        $ramText = $minParsed['memory']    ?? '';
+
+        $cpuScore = $this->cpuScoreFromText($cpuText);
+        $gpuScore = $this->gpuScoreFromText($gpuText);
+        $ramGb    = $this->ramFromText($ramText);
+
+        return [$cpuScore, $gpuScore, $ramGb];
+    }
+
+    private function cpuScoreFromText(string $text): ?int
+    {
+        if ($text === '') return null;
+
+        $clean = strtolower($text);
+        $clean = str_replace(['intel', 'amd', 'processor', 'cpu'], '', $clean);
+        $clean = preg_replace('/\s+/', ' ', $clean);
+        $clean = trim($clean);
+
+        $cpu = Cpubench::whereRaw('LOWER(name) LIKE ?', ['%' . $clean . '%'])->first();
+        return $cpu?->score;
+    }
+
+    private function gpuScoreFromText(string $text): ?int
+    {
+        if ($text === '') return null;
+
+        $clean = strtolower($text);
+        $clean = str_replace(['nvidia', 'geforce', 'amd', 'radeon', 'graphics', 'video card', 'video'], '', $clean);
+        $clean = preg_replace('/\s+/', ' ', $clean);
+        $clean = trim($clean);
+
+        $gpu = GPUbench::whereRaw('LOWER(name) LIKE ?', ['%' . $clean . '%'])->first();
+        return $gpu?->score;
+    }
+
+    private function ramFromText(string $text): ?int
+    {
+        if ($text === '') return null;
+
+        if (preg_match('/(\d+)\s*gb/i', $text, $m)) {
+            return (int) $m[1];
+        }
+
+        return null;
+    }
+
+    // main method
     public function getRequirements(int $appId): ?array
     {
         $saved = GameRequirement::where('appid', $appId)->first();
@@ -40,11 +99,17 @@ class SteamService
         $minParsed = $this->parse($minHtml);
         $recParsed = $this->parse($recHtml);
 
+        // basically look at what we've gotten and give it a cpu score
+        [$cpuScore, $gpuScore, $ramGb] = $this->scoresFromParsed($minParsed);
+
         GameRequirement::updateOrCreate(
             ['appid' => $appId],
             [
                 'minimum_parsed'     => $minParsed,
                 'recommended_parsed' => $recParsed,
+                'min_cpu_score'      => $cpuScore,
+                'min_gpu_score'      => $gpuScore,
+                'min_ram_gb'         => $ramGb,
             ]
         );
 

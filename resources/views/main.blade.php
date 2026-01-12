@@ -107,18 +107,76 @@
                     </div>
                 </div>
             </div>
-
-            <div class="col-md-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-header">
-                        Steam Requirements (raw)
-                    </div>
-                    <div class="card-body">
-                        <pre class="small bg-light p-2 border rounded">
-                        </pre>
+            @if (!empty($comparison))
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100">
+                        <div class="card-header">
+                            Comparison vs minimum requirements
+                        </div>
+                        <div class="card-body">
+                            <p>
+                                Overall:
+                                @if ($comparison['ok'])
+                                    <span class="text-success">Your PC meets the minimum requirements.</span>
+                                @else
+                                    <span class="text-danger">Your PC does not meet the minimum requirements.</span>
+                                @endif
+                            </p>
+                            <ul class="list-unstyled">
+                                <li>
+                                    CPU: {{ $comparison['cpu']['pc'] }} vs required {{ $comparison['cpu']['req'] }}
+                                    @if ($comparison['cpu']['ok'])
+                                        <span class="text-success">(OK)</span>
+                                    @else
+                                        <span class="text-danger">(Too weak)</span>
+                                    @endif
+                                </li>
+                                <li>
+                                    GPU: {{ $comparison['gpu']['pc'] }} vs required {{ $comparison['gpu']['req'] }}
+                                    @if ($comparison['gpu']['ok'])
+                                        <span class="text-success">(OK)</span>
+                                    @else
+                                        <span class="text-danger">(Too weak)</span>
+                                    @endif
+                                </li>
+                                <li>
+                                    RAM: {{ $comparison['ram']['pc'] }} GB vs required {{ $comparison['ram']['req'] }} GB
+                                    @if ($comparison['ram']['ok'])
+                                        <span class="text-success">(OK)</span>
+                                    @else
+                                        <span class="text-danger">(Too low)</span>
+                                    @endif
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
-            </div>
+            @endif
+            @if ($pcDebug)
+                <div class="col-12 mb-3">
+                    <div class="card">
+                        <div class="card-header">Debug: My PC data used for comparison</div>
+                        <div class="card-body">
+            <pre class="small bg-light p-2 border rounded">
+            {{ json_encode($pcDebug, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}
+            </pre>
+                        </div>
+                    </div>
+                </div>
+            @endif
+
+            @if ($gameDebug)
+                <div class="col-12 mb-3">
+                    <div class="card">
+                        <div class="card-header">Debug: Game data used for comparison</div>
+                        <div class="card-body">
+            <pre class="small bg-light p-2 border rounded">
+            {{ json_encode($gameDebug, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}
+            </pre>
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
     @elseif($mySpecs)
         <div class="alert alert-info">

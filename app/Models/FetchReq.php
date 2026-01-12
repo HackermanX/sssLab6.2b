@@ -13,9 +13,11 @@ class FetchReq extends Model
 
     protected $fillable = [
         'CPU',
+        'GPU',
         'RAM',
         'STORAGE',
-        'GPU',
+        'cpu_id',
+        'gpu_id',
     ];
 
     public function cpu()
