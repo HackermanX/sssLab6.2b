@@ -1,0 +1,14 @@
+[90m= [39m[
+    "[34mminimum[39m" => [
+      "[34mos[39m" => "[32mWindows® 10[39m",
+      "[34mprocessor[39m" => "[32m4 hardware CPU threads - Intel® Core™ i5 750 or higher[39m",
+      "[34mmemory[39m" => "[32m8 GB RAM[39m",
+      "[34mgraphics[39m" => "[32mVideo card must be 1 GB or more and should be a DirectX 11-compatible with support for Shader Model 5.0[39m",
+      "[34mdirectx[39m" => "[32mVersion 11[39m",
+      "[34mstorage[39m" => "[32m85 GB available space[39m",
+      "[34mnetwork[39m" => [36mnull[39m,
+      "[34mother[39m" => [36mnull[39m,
+    ],
+    "[34mrecommended[39m" => [36mnull[39m,
+  ]
+

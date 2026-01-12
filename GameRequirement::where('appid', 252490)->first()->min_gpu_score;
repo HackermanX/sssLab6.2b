@@ -1,0 +1,23 @@
+[90m= [39m[
+    "[34mminimum[39m" => [
+      "[34mos[39m" => "[32mWindows 11 64bit[39m",
+      "[34mprocessor[39m" => "[32mAMD Ryzen 5 1400 or Intel Core i5-6600[39m",
+      "[34mmemory[39m" => "[32m12 GB RAM[39m",
+      "[34mgraphics[39m" => "[32mAMD Radeon RX 470, NVIDIA GeForce GTX 1060, Intel® Arc™ A580[39m",
+      "[34mdirectx[39m" => "[32mVersion 11[39m",
+      "[34mstorage[39m" => "[32m45 GB available space[39m",
+      "[34mnetwork[39m" => "[32mBroadband Internet connection[39m",
+      "[34mother[39m" => [36mnull[39m,
+    ],
+    "[34mrecommended[39m" => [
+      "[34mos[39m" => "[32mWindows 11 64bit[39m",
+      "[34mprocessor[39m" => "[32mAMD Ryzen 7 3700X or Intel® Core i7-6700K[39m",
+      "[34mmemory[39m" => "[32m16 GB RAM[39m",
+      "[34mgraphics[39m" => "[32mAMD Radeon RX 6600XT, NVIDIA GeForce RTX 3060, Intel Arc B580[39m",
+      "[34mdirectx[39m" => "[32mVersion 12[39m",
+      "[34mstorage[39m" => "[32m45 GB available space[39m",
+      "[34mnetwork[39m" => "[32mBroadband Internet connection[39m",
+      "[34mother[39m" => [36mnull[39m,
+    ],
+  ]
+
