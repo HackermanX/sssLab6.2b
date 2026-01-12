@@ -17,4 +17,14 @@ class FetchReq extends Model
         'STORAGE',
         'GPU',
     ];
+
+    public function cpu()
+    {
+        return $this->belongsTo(\App\Models\CPUbench::class, 'cpu_id');
+    }
+
+    public function gpu()
+    {
+        return $this->belongsTo(\App\Models\GPUbench::class, 'gpu_id');
+    }
 }

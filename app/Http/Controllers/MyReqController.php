@@ -5,6 +5,8 @@ use App\Models\FetchReq;
 use App\Models\GameRequirement;
 use App\Services\SteamService;
 use Illuminate\Http\Request;
+use App\Models\CPUbench;
+use App\Models\GPUbench;
 
 class MyReqController extends Controller
 {
@@ -12,36 +14,52 @@ class MyReqController extends Controller
     {
         $mySpecs = FetchReq::latest()->first();
 
+        $cpus = CPUbench::orderBy('score')->get();
+        $gpus = GPUbench::orderBy('score')->get();
+
         return view('main', [
-            'mySpecs' => $mySpecs,
+            'mySpecs'           => $mySpecs,
             'steamRequirements' => null,
-            'appId' => null,
+            'appId'             => null,
+            'cpus'              => $cpus,
+            'gpus'              => $gpus,
         ]);
     }
 
     public function storeAndShow(Request $request, SteamService $steamService)
     {
         $data = $request->validate([
-            'CPU'     => 'required|string|max:255',
-            'RAM'     => 'required|string|max:255',
+            'cpu_id'  => ['required', 'exists:c_p_ubenches,id'],
+            'gpu_id'  => ['required', 'exists:g_p_ubenches,id'],
             'STORAGE' => 'required|string|max:255',
-            'GPU'     => 'required|string|max:255',
+            'RAM'     => ['required', 'string', 'max:255'],
             'appId'   => 'required|numeric',
         ]);
 
+        $cpu = CPUbench::findOrFail($data['cpu_id']);
+        $gpu = GPUbench::findOrFail($data['gpu_id']);
+
         $mySpecs = FetchReq::create([
-            'CPU'     => $data['CPU'],
+            'cpu_id'  => $cpu->id,
+            'gpu_id'  => $gpu->id,
+            'GPU'     => $gpu->name,
+            'CPU'     => $cpu->name,
+
             'RAM'     => $data['RAM'],
             'STORAGE' => $data['STORAGE'],
-            'GPU'     => $data['GPU'],
         ]);
 
         $steamRequirements = $steamService->getRequirements((int)$data['appId']);
+
+        $cpus = CPUbench::orderBy('score')->get();
+        $gpus = GPUbench::orderBy('score')->get();
 
         return view('main', [
             'mySpecs'           => $mySpecs,
             'steamRequirements' => $steamRequirements,
             'appId'             => $data['appId'],
+            'cpus'              => $cpus,
+            'gpus'              => $gpus,
         ]);
     }
 }

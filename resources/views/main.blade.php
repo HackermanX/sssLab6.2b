@@ -24,13 +24,17 @@
                 @csrf
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label for="CPU" class="form-label">CPU</label>
-                        <input type="text"
-                               class="form-control"
-                               id="CPU"
-                               name="CPU"
-                               value="{{ old('CPU', optional($mySpecs)->CPU) }}"
-                               placeholder="e.g. Intel Core i5-10400">
+                        <label for="cpu_id" class="form-label">CPU</label>
+                        <select class="form-select" id="cpu_id" name="cpu_id">
+                            <option value="">-- Select CPU --</option>
+                            @foreach ($cpus as $cpu)
+                                <option
+                                    value="{{ $cpu->id }}"
+                                    @selected(old('cpu_id', optional($mySpecs)->cpu_id) == $cpu->id)>
+                                    {{ $cpu->name }} (score: {{ $cpu->score }})
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="col-md-6">
                         <label for="RAM" class="form-label">RAM</label>
@@ -53,15 +57,19 @@
                                value="{{ old('STORAGE', optional($mySpecs)->STORAGE) }}"
                                placeholder="e.g. 500 GB SSD">
                     </div>
-                    <div class="col-md-6">
-                        <label for="GPU" class="form-label">GPU</label>
-                        <input type="text"
-                               class="form-control"
-                               id="GPU"
-                               name="GPU"
-                               value="{{ old('GPU', optional($mySpecs)->GPU) }}"
-                               placeholder="e.g. NVIDIA GTX 1660">
-                    </div>
+                        <div class="col-md-6">
+                                <label for="gpu_id" class="form-label">GPU</label>
+                                <select class="form-select" id="gpu_id" name="gpu_id">
+                                    <option value="">-- Select GPU --</option>
+                                    @foreach ($gpus as $gpu)
+                                        <option
+                                            value="{{ $gpu->id }}"
+                                            @selected(old('gpu_id', optional($mySpecs)->gpu_id) == $gpu->id)>
+                                            {{ $gpu->name }} (score: {{ $gpu->score }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
                 </div>
 
                 <div class="mb-3">
@@ -73,7 +81,7 @@
                            value="{{ old('appId', $appId) }}"
                            placeholder="e.g. 730 for CS2">
                     <div class="form-text">
-                        The App ID is the number in the Steam store URL (e.g. https://store.steampowered.com/app/<strong>730</strong>/...). [web:17]
+                        The App ID is the number in the Steam store URL (e.g. https://store.steampowered.com/app/<strong>730</strong>/...).
                     </div>
                 </div>
 
@@ -84,7 +92,6 @@
         </div>
     </div>
 
-    {{-- Printed specs and Steam requirements --}}
     @if ($mySpecs && $steamRequirements)
         <div class="row">
             <div class="col-md-6 mb-4">
@@ -93,10 +100,10 @@
                         My PC Specs
                     </div>
                     <div class="card-body">
-                        <p><strong>CPU:</strong> {{ $mySpecs->CPU }}</p>
+                        <p><strong>CPU:</strong> {{ optional($mySpecs->cpu)->name ?? $mySpecs->CPU }}</p>
                         <p><strong>RAM:</strong> {{ $mySpecs->RAM }}</p>
                         <p><strong>Storage:</strong> {{ $mySpecs->STORAGE }}</p>
-                        <p><strong>GPU:</strong> {{ $mySpecs->GPU }}</p>
+                        <p><strong>GPU:</strong> {{ optional($mySpecs->gpu)->name ?? $mySpecs->GPU }}</p>
                     </div>
                 </div>
             </div>
@@ -107,9 +114,7 @@
                         Steam Requirements (raw)
                     </div>
                     <div class="card-body">
-                        {{-- Adjust to your getRequirements() structure --}}
                         <pre class="small bg-light p-2 border rounded">
-{{ json_encode($steamRequirements, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}
                         </pre>
                     </div>
                 </div>
@@ -117,7 +122,7 @@
         </div>
     @elseif($mySpecs)
         <div class="alert alert-info">
-            Your specs are saved, but Steam requirements are not loaded yet. Enter a Steam App ID and submit the form. [web:17]
+            Your specs are saved, but Steam requirements are not loaded yet. Enter a Steam App ID and submit the form.
         </div>
     @endif
 </div>
