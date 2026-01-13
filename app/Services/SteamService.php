@@ -11,14 +11,7 @@ class SteamService
 {
     public function getRequirements(int $appId): ?array
     {
-        // $saved = GameRequirement::where('appid', $appId)->first();
-        // if ($saved) {
-        //     return [
-        //         'minimum'     => $saved->minimum_parsed,
-        //         'recommended' => $saved->recommended_parsed,
-        //     ];
-        // } do not save everyhing because i change the functionaity all the time
-
+        // do not save everyhing because i change the functionaity all the time, might get rid of this anyways, since it just adds extra complexity
         return $this->fetchParseAndSave($appId);
     }
 
@@ -41,19 +34,6 @@ class SteamService
 
         $minParsed = $this->parse($minHtml);
         $recParsed = $this->parse($recHtml);
-
-        [$cpuScore, $gpuScore, $ramGb] = $this->scoresFromParsed($minParsed);
-
-        GameRequirement::updateOrCreate(
-            ['appid' => $appId],
-            [
-                'minimum_parsed'     => $minParsed,
-                'recommended_parsed' => $recParsed,
-                'min_cpu_score'      => $cpuScore,
-                'min_gpu_score'      => $gpuScore,
-                'min_ram_gb'         => $ramGb,
-            ]
-        );
 
         return [
             'minimum'     => $minParsed,
@@ -159,7 +139,6 @@ class SteamService
 
         return empty($scores) ? null : min($scores);
     }
-
 
     private function ramFromText(string $text): ?int
     {

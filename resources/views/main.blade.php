@@ -2,14 +2,16 @@
 
 @section('content')
 <div class="container my-5">
-    <h1 class="mb-4">My PC vs Steam Requirements</h1>
 
-    {{-- PC specs + appId form --}}
-    <div class="card mb-4">
-        <div class="card-header">
-            Enter your PC specs and Steam App ID
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0 text-light fw-semibold">My PC vs Steam Requirements</h1>
+    </div>
+
+    <div class="card mb-4 bg-dark border-0 shadow-lg rounded-3">
+        <div class="card-header bg-dark border-0 text-light fw-semibold">
+            Enter your PC specs, then click a game card to compare
         </div>
-        <div class="card-body">
+        <div class="card-body text-light">
             @if ($errors->any())
                 <div class="alert alert-danger">
                     <ul class="mb-0">
@@ -20,12 +22,12 @@
                 </div>
             @endif
 
-            <form method="POST" action="{{ route('main.store') }}">
+            <form method="POST" action="{{ route('main.store') }}" id="pc-form">
                 @csrf
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label for="cpu_id" class="form-label">CPU</label>
-                        <select class="form-select" id="cpu_id" name="cpu_id">
+                        <select class="form-select bg-dark text-light border-secondary" id="cpu_id" name="cpu_id">
                             <option value="">-- Select CPU --</option>
                             @foreach ($cpus as $cpu)
                                 <option
@@ -39,7 +41,7 @@
                     <div class="col-md-6">
                         <label for="RAM" class="form-label">RAM</label>
                         <input type="text"
-                               class="form-control"
+                               class="form-control bg-dark text-light border-secondary"
                                id="RAM"
                                name="RAM"
                                value="{{ old('RAM', optional($mySpecs)->RAM) }}"
@@ -47,59 +49,102 @@
                     </div>
                 </div>
 
-                <div class="row mb-3">
+                <div class="row mb-2">
                     <div class="col-md-6">
                         <label for="STORAGE" class="form-label">Storage</label>
                         <input type="text"
-                               class="form-control"
+                               class="form-control bg-dark text-light border-secondary"
                                id="STORAGE"
                                name="STORAGE"
                                value="{{ old('STORAGE', optional($mySpecs)->STORAGE) }}"
                                placeholder="e.g. 500 GB SSD">
                     </div>
-                        <div class="col-md-6">
-                                <label for="gpu_id" class="form-label">GPU</label>
-                                <select class="form-select" id="gpu_id" name="gpu_id">
-                                    <option value="">-- Select GPU --</option>
-                                    @foreach ($gpus as $gpu)
-                                        <option
-                                            value="{{ $gpu->id }}"
-                                            @selected(old('gpu_id', optional($mySpecs)->gpu_id) == $gpu->id)>
-                                            {{ $gpu->name }} (score: {{ $gpu->score }})
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                </div>
-
-                <div class="mb-3">
-                    <label for="appId" class="form-label">Steam App ID</label>
-                    <input type="number"
-                           class="form-control"
-                           id="appId"
-                           name="appId"
-                           value="{{ old('appId', $appId) }}"
-                           placeholder="e.g. 730 for CS2">
-                    <div class="form-text">
-                        The App ID is the number in the Steam store URL (e.g. https://store.steampowered.com/app/<strong>730</strong>/...).
+                    <div class="col-md-6">
+                        <label for="gpu_id" class="form-label">GPU</label>
+                        <select class="form-select bg-dark text-light border-secondary" id="gpu_id" name="gpu_id">
+                            <option value="">-- Select GPU --</option>
+                            @foreach ($gpus as $gpu)
+                                <option
+                                    value="{{ $gpu->id }}"
+                                    @selected(old('gpu_id', optional($mySpecs)->gpu_id) == $gpu->id)>
+                                    {{ $gpu->name }} (score: {{ $gpu->score }})
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary">
-                    Save & Show Requirements
-                </button>
+                <input type="hidden" name="appId" id="appId">
+                <small class="text-muted">Your specs are saved automatically when you click a game.</small>
             </form>
         </div>
+    </div>
+
+    @php
+        $sampleGames = [
+            [
+                'title' => 'GTA V',
+                'year'  => 2015,
+                'rating'=> 3.9,
+                'image' => asset('img/games/gta5-placeholder.jpg'),
+                'appid' => 271590,
+            ],
+            [
+                'title' => 'Cyberpunk 2077',
+                'year'  => 2020,
+                'rating'=> 3.7,
+                'image' => asset('img/games/cyberpunk-placeholder.jpg'),
+                'appid' => 1091500,
+            ],
+            [
+                'title' => 'Red Dead Redemption 2',
+                'year'  => 2019,
+                'rating'=> 4.3,
+                'image' => asset('img/games/rdr2-placeholder.jpg'),
+                'appid' => 1174180,
+            ],
+            [
+                'title' => 'Counter‑Strike 2',
+                'year'  => 2012,
+                'rating'=> 3.4,
+                'image' => asset('img/games/cs2-placeholder.jpg'),
+                'appid' => 730,
+            ],
+        ];
+    @endphp
+
+    <div class="mb-2 text-light fw-semibold">Popular games</div>
+    <div class="row g-4 mb-5">
+        @foreach ($sampleGames as $game)
+            <div class="col-md-3 col-sm-6">
+                <button type="button"
+                        class="game-card selectable-game btn p-0 w-100 border-0 text-start"
+                        data-appid="{{ $game['appid'] }}">
+                    <div class="game-card-image"
+                         style="background-image: url('{{ $game['image'] }}')"></div>
+                    <div class="game-card-overlay"></div>
+                    <div class="game-card-content">
+                        <h5 class="game-card-title">{{ $game['title'] }}</h5>
+                        <div class="game-card-meta">
+                            <span class="game-card-year">{{ $game['year'] }}</span>
+                            <span class="game-card-rating">
+                                <i class="bi bi-star-fill me-1"></i>{{ number_format($game['rating'], 1) }}
+                            </span>
+                        </div>
+                    </div>
+                </button>
+            </div>
+        @endforeach
     </div>
 
     @if ($mySpecs && $steamRequirements)
         <div class="row">
             <div class="col-md-6 mb-4">
-                <div class="card h-100">
-                    <div class="card-header">
+                <div class="card h-100 bg-dark border-0 shadow-lg rounded-3">
+                    <div class="card-header bg-dark border-0 text-light">
                         My PC Specs
                     </div>
-                    <div class="card-body">
+                    <div class="card-body text-light">
                         <p><strong>CPU:</strong> {{ optional($mySpecs->cpu)->name ?? $mySpecs->CPU }}</p>
                         <p><strong>RAM:</strong> {{ $mySpecs->RAM }}</p>
                         <p><strong>Storage:</strong> {{ $mySpecs->STORAGE }}</p>
@@ -107,13 +152,14 @@
                     </div>
                 </div>
             </div>
+
             @if (!empty($comparison))
                 <div class="col-md-6 mb-4">
-                    <div class="card h-100">
-                        <div class="card-header">
+                    <div class="card h-100 bg-dark border-0 shadow-lg rounded-3">
+                        <div class="card-header bg-dark border-0 text-light">
                             Comparison vs minimum requirements
                         </div>
-                        <div class="card-body">
+                        <div class="card-body text-light">
                             <p>
                                 Overall:
                                 @if ($comparison['ok'])
@@ -152,36 +198,32 @@
                     </div>
                 </div>
             @endif
-            @if ($pcDebug)
-                <div class="col-12 mb-3">
-                    <div class="card">
-                        <div class="card-header">Debug: My PC data used for comparison</div>
-                        <div class="card-body">
-            <pre class="small bg-light p-2 border rounded">
-            {{ json_encode($pcDebug, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}
-            </pre>
-                        </div>
-                    </div>
-                </div>
-            @endif
-
-            @if ($gameDebug)
-                <div class="col-12 mb-3">
-                    <div class="card">
-                        <div class="card-header">Debug: Game data used for comparison</div>
-                        <div class="card-body">
-            <pre class="small bg-light p-2 border rounded">
-            {{ json_encode($gameDebug, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}
-            </pre>
-                        </div>
-                    </div>
-                </div>
-            @endif
         </div>
     @elseif($mySpecs)
-        <div class="alert alert-info">
-            Your specs are saved, but Steam requirements are not loaded yet. Enter a Steam App ID and submit the form.
+        <div class="alert alert-info bg-secondary border-0 text-light">
+            Your specs are saved, but Steam requirements are not loaded yet. Click a game card to run a comparison.
         </div>
     @endif
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form       = document.getElementById('pc-form');
+    const appIdInput = document.getElementById('appId');
+
+    if (!form || !appIdInput) return;
+
+    document.querySelectorAll('.selectable-game').forEach(card => {
+        card.addEventListener('click', function () {
+            const appId = this.dataset.appid;
+            if (!appId) return;
+
+            appIdInput.value = appId;
+            form.submit();
+        });
+    });
+});
+</script>
+@endpush
