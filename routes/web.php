@@ -26,3 +26,6 @@ Route::get('/steam/{appId}', function ($appId, SteamService $steamService) {
 
 Route::get('/pc-reqs', [MyReqController::class, 'showForm'])->name('main.form');
 Route::post('/pc-reqs', [MyReqController::class, 'storeAndShow'])->name('main.store');
+
+Route::delete('/pc-reqs/', [MyReqController::class, 'destroy'])
+    ->name('main.destroy');

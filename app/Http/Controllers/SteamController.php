@@ -72,6 +72,14 @@ class SteamController extends Controller
             'recommended_requirements'     => $parseRequirements($recRaw),
         ];
 
+        $steamRequirements = app(\App\Services\SteamService::class)
+            ->getRequirements($request->appId);
+
+        dd([
+            'appId' => $request->appId,
+            'steamRequirements' => $steamRequirements,
+        ]);
+
         return response()->json($systemSpecs);
     }
 }

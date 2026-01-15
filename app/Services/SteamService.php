@@ -41,7 +41,7 @@ class SteamService
         ];
     }
 
-    private function scoresFromParsed(?array $minParsed): array
+    public function scoresFromParsed(?array $minParsed): array
     {
         if (!$minParsed) {
             return [null, null, null];
