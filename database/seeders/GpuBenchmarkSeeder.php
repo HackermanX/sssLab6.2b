@@ -15,8 +15,12 @@ class GpuBenchmarkSeeder extends Seeder
     public function run(): void
     {
         $gpus = [
+            ['name' => 'NVIDIA GTX 660',    'score' => 3500],
+            ['name' => 'AMD Radeon HD 7870','score' => 3800],
+            ['name' => 'AMD Radeon RX 580','score' => 7000],
             ['name' => 'NVIDIA GTX 970',   'score' => 5000],
             ['name' => 'NVIDIA GTX 1060',  'score' => 7000],
+            ['name' => 'NVIDIA GTX 1060 6GB','score' => 7200],
             ['name' => 'NVIDIA GTX 1660',  'score' => 9000],
             ['name' => 'NVIDIA RTX 2060',  'score' => 12000],
             ['name' => 'NVIDIA RTX 3060',  'score' => 16000],

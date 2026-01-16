@@ -11,7 +11,6 @@ class SteamService
 {
     public function getRequirements(int $appId): ?array
     {
-        // do not save everyhing because i change the functionaity all the time, might get rid of this anyways, since it just adds extra complexity
         return $this->fetchParseAndSave($appId);
     }
 
@@ -23,7 +22,7 @@ class SteamService
             'l'      => 'english',
         ]);
 
-        if ($response->failed() || !$response->json("{$appId}.success")) {
+        if ($response->failed() || ! $response->json("{$appId}.success")) {
             return null;
         }
 
@@ -41,21 +40,81 @@ class SteamService
         ];
     }
 
-    public function scoresFromParsed(?array $minParsed): array
+    public function scoresFromParsed(?array $parsed): array
     {
-        if (!$minParsed) {
+        if (! $parsed) {
             return [null, null, null];
         }
 
-        $cpuText = strtolower($minParsed['processor'] ?? '');
-        $gpuText = strtolower($minParsed['graphics']  ?? '');
-        $ramText = $minParsed['memory']               ?? '';
+        $cpuText = strtolower($parsed['processor'] ?? '');
+        $gpuText = strtolower($parsed['graphics']  ?? '');
+        $ramText = $parsed['memory']              ?? '';
 
         $ramGb    = $this->ramFromText($ramText);
         $cpuScore = $this->bestCpuScoreFromText($cpuText);
         $gpuScore = $this->bestGpuScoreFromText($gpuText);
 
         return [$cpuScore, $gpuScore, $ramGb];
+    }
+
+    public function storageFromParsed(?array $parsed): ?int
+    {
+        if (! $parsed) {
+            return null;
+        }
+
+        $text = $parsed['storage'] ?? '';
+        if ($text === '') {
+            return null;
+        }
+
+        if (preg_match('/(\d+)\s*tb/i', $text, $m)) {
+            return (int) $m[1] * 1024;
+        }
+
+        if (preg_match('/(\d+)\s*gb/i', $text, $m)) {
+            return (int) $m[1];
+        }
+
+        return null;
+    }
+
+    public function buildRequirementForApp(int $appId): ?GameRequirement
+    {
+        $req = $this->getRequirements($appId);
+        if (! $req) {
+            return null;
+        }
+
+        [$minCpu, $minGpu, $minRam] = $this->scoresFromParsed($req['minimum']);
+        [$recCpu, $recGpu, $recRam] = $this->scoresFromParsed($req['recommended']);
+
+        $minStorage = $this->storageFromParsed($req['minimum']     ?? null);
+        $recStorage = $this->storageFromParsed($req['recommended'] ?? null);
+
+        $cfg = config('featured_games')[$appId] ?? [];
+
+        return GameRequirement::updateOrCreate(
+            ['appid' => $appId],
+            [
+                'name'               => $cfg['title'] ?? 'Unknown',
+                'year'               => $cfg['year']  ?? null,
+              //  'image'              => $cfg['image'] ?? null,
+
+                'minimum_parsed'     => $req['minimum'],
+                'recommended_parsed' => $req['recommended'],
+
+                'min_cpu_score'      => $minCpu,
+                'min_gpu_score'      => $minGpu,
+                'min_ram_gb'         => $minRam,
+                'min_storage_gb'     => $minStorage,
+
+                'rec_cpu_score'      => $recCpu,
+                'rec_gpu_score'      => $recGpu,
+                'rec_ram_gb'         => $recRam,
+                'rec_storage_gb'     => $recStorage,
+            ]
+        );
     }
 
     private function bestCpuScoreFromText(string $text): ?int
@@ -79,9 +138,8 @@ class SteamService
 
             $cpu = CPUbench::whereRaw('LOWER(name) LIKE ?', ['%' . $clean . '%'])->first();
 
-            // Fallback
-            if (!$cpu && preg_match('/(i[3579]-\d{3,4}|ryzen\s*\d\s*\d{3,4})/i', $clean, $m)) {
-                $short = strtolower($m[1]);          // "i5-8400" or "ryzen 5 2600"
+            if (! $cpu && preg_match('/(i[3579]-\d{3,4}|ryzen\s*\d\s*\d{3,4})/i', $clean, $m)) {
+                $short = strtolower($m[1]);
                 $cpu   = CPUbench::whereRaw('LOWER(name) LIKE ?', ['%' . $short . '%'])->first();
             }
 
@@ -119,15 +177,14 @@ class SteamService
                 continue;
             }
 
-            // several fallback patterns, why cant everyone just write the requirements properly
             $gpu = GPUbench::whereRaw('LOWER(name) LIKE ?', ['%' . $clean . '%'])->first();
 
-            if (!$gpu && preg_match('/(gtx\s*\d{3,4}|rtx\s*\d{3,4}|rx\s*\d{3,4})/i', $clean, $m)) {
+            if (! $gpu && preg_match('/(gtx\s*\d{3,4}|rtx\s*\d{3,4}|rx\s*\d{3,4})/i', $clean, $m)) {
                 $short = strtolower($m[1]);
-                $gpu = GPUbench::whereRaw('LOWER(name) LIKE ?', ['%' . $short . '%'])->first();
+                $gpu   = GPUbench::whereRaw('LOWER(name) LIKE ?', ['%' . $short . '%'])->first();
             }
 
-            if (!$gpu && preg_match('/(\d{3,4})/', $clean, $m)) {
+            if (! $gpu && preg_match('/(\d{3,4})/', $clean, $m)) {
                 $num = $m[1];
                 $gpu = GPUbench::whereRaw('LOWER(name) LIKE ?', ['%' . $num . '%'])->first();
             }
@@ -155,7 +212,7 @@ class SteamService
 
     private function parse(?string $html): ?array
     {
-        if (!$html) {
+        if (! $html) {
             return null;
         }
 
@@ -221,7 +278,7 @@ class SteamService
 
                 foreach ($map as $field => $aliases) {
                     if (in_array($keyPart, $aliases, true)) {
-                        if (!$out[$field]) {
+                        if (! $out[$field]) {
                             $out[$field] = $valuePart;
                         }
                         $found = true;
@@ -229,7 +286,7 @@ class SteamService
                     }
                 }
 
-                if (!$found) {
+                if (! $found) {
                     $unmatchedLines[] = $line;
                 }
             } else {
@@ -244,7 +301,7 @@ class SteamService
             foreach ($map as $field => $aliases) {
                 foreach ($aliases as $alias) {
                     if (preg_match('/\b' . preg_quote($alias, '/') . '\b/i', $line)) {
-                        if (!$out[$field]) {
+                        if (! $out[$field]) {
                             $out[$field] = $line;
                             continue 3;
                         }
@@ -304,7 +361,7 @@ class SteamService
     private function hasAtLeastOneValue(array $arr): bool
     {
         foreach (['os', 'processor', 'memory', 'graphics', 'directx', 'storage'] as $k) {
-            if (!empty($arr[$k])) {
+            if (! empty($arr[$k])) {
                 return true;
             }
         }

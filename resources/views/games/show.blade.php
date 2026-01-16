@@ -11,7 +11,8 @@
                 Comparing against your PC:
                 <strong>{{ optional($mySpecs->cpu)->name }}</strong>,
                 <strong>{{ optional($mySpecs->gpu)->name }}</strong>,
-                {{ $mySpecs->RAM }} RAM
+                {{ $mySpecs->RAM }} RAM,
+                {{ $mySpecs->STORAGE }} storage
             </p>
         @else
             <div class="alert alert-info mb-4">
@@ -24,41 +25,28 @@
         @php
             $cmp = $comparison ?? [];
 
-            // Minimum flags from ComparePerformance::compare()
-            $cpuMinOk = $cmp['cpu_min_ok'] ?? false;
-            $gpuMinOk = $cmp['gpu_min_ok'] ?? false;
-            $ramMinOk = $cmp['ram_min_ok'] ?? false;
+            $cpuMinOk     = $cmp['cpu_min_ok']     ?? false;
+            $gpuMinOk     = $cmp['gpu_min_ok']     ?? false;
+            $ramMinOk     = $cmp['ram_min_ok']     ?? false;
+            $storageMinOk = $cmp['storage_min_ok'] ?? false;
 
-            // Recommended checks computed here
-
-            // 1) CPU recommended
-            $cpuRecOk = true;
-            if (isset($cmp['pc_cpu_score'], $game->rec_cpu_score) && $game->rec_cpu_score) {
-                $cpuRecOk = (int) $cmp['pc_cpu_score'] >= (int) $game->rec_cpu_score;
-            }
-
-            // 2) GPU recommended
-            $gpuRecOk = true;
-            if (isset($cmp['pc_gpu_score'], $game->rec_gpu_score) && $game->rec_gpu_score) {
-                $gpuRecOk = (int) $cmp['pc_gpu_score'] >= (int) $game->rec_gpu_score;
-            }
-
-            // 3) RAM recommended (derived from text like "8 GB RAM")
-            $ramRecOk = true;
-            if ($mySpecs) {
-                $recRamText = data_get($game->recommended_parsed, 'memory');
-                $userRamGb  = (int) $mySpecs->RAM;
-
-                if (preg_match('/(\d+)\s*GB/i', (string) $recRamText, $m)) {
-                    $recRamGb  = (int) $m[1];
-                    $ramRecOk  = $userRamGb >= $recRamGb;
-                }
-            }
+            $cpuRecOk     = $cmp['cpu_rec_ok']     ?? true;
+            $gpuRecOk     = $cmp['gpu_rec_ok']     ?? true;
+            $ramRecOk     = $cmp['ram_rec_ok']     ?? true;
+            $storageRecOk = $cmp['storage_rec_ok'] ?? true;
         @endphp
 
-        {{-- Overall result --}}
+        @php
+            $allRecOk = $cpuRecOk && $gpuRecOk && $ramRecOk && $storageRecOk;
+            $allMinOk = $cpuMinOk && $gpuMinOk && $ramMinOk && $storageMinOk;
+        @endphp
+
         @if ($comparison)
-            @if ($comparison['ok'] ?? false)
+            @if ($allRecOk)
+                <div class="alert alert-success mb-4">
+                    Your PC meets the <strong>recommended</strong> requirements for this game.
+                </div>
+            @elseif ($allMinOk)
                 <div class="alert alert-success mb-4">
                     Your PC meets the <strong>minimum</strong> requirements for this game.
                 </div>
@@ -69,7 +57,34 @@
             @endif
         @endif
 
-        {{-- Detailed comparison table --}}
+        <!-- {{-- Debug block (optional) --}}
+        {{-- 
+        @if ($comparison)
+            <pre class="bg-dark text-light p-3 mt-3">
+            {{ json_encode([
+                'pc' => [
+                    'cpu_score'     => $comparison['pc_cpu_score']    ?? null,
+                    'gpu_score'     => $comparison['pc_gpu_score']    ?? null,
+                    'ram_gb'        => $comparison['pc_ram_gb']       ?? null,
+                    'storage_gb'    => $comparison['pc_storage_gb']   ?? null,
+                ],
+                'min' => [
+                    'cpu_score'     => $game->min_cpu_score      ?? null,
+                    'gpu_score'     => $game->min_gpu_score      ?? null,
+                    'ram_gb'        => $game->min_ram_gb         ?? null,
+                    'storage_gb'    => $game->min_storage_gb     ?? null,
+                ],
+                'rec' => [
+                    'cpu_score'     => $game->rec_cpu_score      ?? null,
+                    'gpu_score'     => $game->rec_gpu_score      ?? null,
+                    'ram_gb'        => $game->rec_ram_gb         ?? null,
+                    'storage_gb'    => $game->rec_storage_gb     ?? null,
+                ],
+                'flags' => $comparison,
+            ], JSON_PRETTY_PRINT) }}
+            </pre>
+        @endif
+        --}} -->
         <div class="card card-dark mb-4">
             <div class="card-header">
                 Requirement comparison
@@ -88,49 +103,54 @@
                         <tr>
                             <th>CPU</th>
                             <td>{{ optional($mySpecs->cpu)->name ?? '—' }}</td>
-                            <td class="{{ $cpuMinOk ? '' : 'text-danger' }}">
+                            <td @class(['', 'text-danger' => ! $cpuMinOk])>
                                 {{ data_get($game->minimum_parsed, 'processor', 'N/A') }}
                             </td>
-                            <td class="{{ $cpuRecOk ? '' : 'text-danger' }}">
+                            <td @class(['', 'text-danger' => ! $cpuRecOk])>
                                 {{ data_get($game->recommended_parsed, 'processor', 'N/A') }}
                             </td>
                         </tr>
+
                         <tr>
                             <th>GPU</th>
                             <td>{{ optional($mySpecs->gpu)->name ?? '—' }}</td>
-                            <td class="{{ $gpuMinOk ? '' : 'text-danger' }}">
+                            <td @class(['', 'text-danger' => ! $gpuMinOk])>
                                 {{ data_get($game->minimum_parsed, 'graphics', 'N/A') }}
                             </td>
-                            <td class="{{ $gpuRecOk ? '' : 'text-danger' }}">
+                            <td @class(['', 'text-danger' => ! $gpuRecOk])>
                                 {{ data_get($game->recommended_parsed, 'graphics', 'N/A') }}
                             </td>
                         </tr>
+
                         <tr>
                             <th>RAM</th>
                             <td>{{ $mySpecs->RAM ?? '—' }}</td>
-                            <td class="{{ $ramMinOk ? '' : 'text-danger' }}">
+                            <td @class(['', 'text-danger' => ! $ramMinOk])>
                                 {{ data_get($game->minimum_parsed, 'memory', 'N/A') }}
                             </td>
-                            <td class="{{ $ramRecOk ? '' : 'text-danger' }}">
+                            <td @class(['', 'text-danger' => ! $ramRecOk])>
                                 {{ data_get($game->recommended_parsed, 'memory', 'N/A') }}
                             </td>
                         </tr>
+
                         <tr>
                             <th>Storage</th>
-                            <td>—</td>
-                            <td>
+                            <td>{{ $mySpecs->STORAGE ?? '—' }}</td>
+                            <td @class(['', 'text-danger' => ! $storageMinOk])>
                                 {{ data_get($game->minimum_parsed, 'storage', 'N/A') }}
                             </td>
-                            <td>
+                            <td @class(['', 'text-danger' => ! $storageRecOk])>
                                 {{ data_get($game->recommended_parsed, 'storage', 'N/A') }}
                             </td>
                         </tr>
+
                         <tr>
                             <th>OS</th>
                             <td>—</td>
                             <td>{{ data_get($game->minimum_parsed, 'os', 'N/A') }}</td>
                             <td>{{ data_get($game->recommended_parsed, 'os', 'N/A') }}</td>
                         </tr>
+
                         <tr>
                             <th>DirectX / Other</th>
                             <td>—</td>

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>My Laravel Project</title>
+    <title>PC vs Game Requirements</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
@@ -13,12 +13,55 @@
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
         crossorigin="anonymous"
     >
+
+    <style>
+        body {
+            background: #020712;
+            color: #f8f9fa;
+        }
+        .navbar-dark.bg-dark {
+            background: #050915 !important;
+        }
+        .card-dark {
+            background-color: #0b1622;
+            border-color: #182635;
+        }
+
+        label,
+        .form-label,
+        .form-text,
+        .form-control,
+        .form-select {
+            color: #f8f9fa;
+        }
+
+        .form-control,
+        .form-select {
+            background-color: #04101d;
+            border-color: #27364a;
+        }
+
+        .form-control::placeholder {
+            color: #adb5bd;
+        }
+
+        .card-header,
+        .card-body,
+        .table {
+            color: #f8f9fa;
+        }
+
+        .text-muted {
+            color: #ced4da !important;
+        }
+    </style>
 </head>
-@stack('scripts')
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
     <div class="container-fluid">
-        <a class="navbar-brand" href="{{ url('/') }}">My App</a>
+        <a class="navbar-brand" href="{{ route('games.index') }}">
+            PC Game Compatibility
+        </a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                 data-bs-target="#mainNavbar" aria-controls="mainNavbar"
@@ -29,14 +72,20 @@
         <div class="collapse navbar-collapse" id="mainNavbar">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
-                    <a class="nav-link active" href="{{ url('/') }}">Home</a>
+                    <a class="nav-link {{ request()->routeIs('games.index') ? 'active' : '' }}"
+                       href="{{ route('games.index') }}">
+                        Games
+                    </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ route('main.form') }}">Main page</a>
+                    <a class="nav-link {{ request()->routeIs('main.form') ? 'active' : '' }}"
+                       href="{{ route('main.form') }}">
+                        My PC specs
+                    </a>
                 </li>
             </ul>
             <span class="navbar-text">
-                Laravel 10 + Bootstrap 5
+                Steam requirements checker
             </span>
         </div>
     </div>

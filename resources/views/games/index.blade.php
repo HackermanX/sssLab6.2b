@@ -20,7 +20,6 @@
             </div>
         @endif
 
-        {{-- Filters --}}
         <form method="GET" action="{{ route('games.index') }}" class="card card-dark mb-4 p-3">
             <div class="row g-3 align-items-end">
                 <div class="col-md-4">
@@ -58,7 +57,6 @@
             </div>
         </form>
 
-        {{-- Featured game cards --}}
         <div class="row row-cols-1 row-cols-md-2 g-4">
             @php $hasFeatured = false; @endphp
 
@@ -95,9 +93,9 @@
                             @if ($mySpecs && $cmp)
                                 <div class="card-body small">
                                     @if ($ok)
-                                        <span class="text-success">You can probably run this.</span>
+                                        <span class="text-success">You can run this game.</span>
                                     @else
-                                        <span class="text-danger">Your PC is below minimum.</span>
+                                        <span class="text-danger">Your PC is below the minimum requirements.</span>
                                     @endif
                                 </div>
                             @endif
@@ -116,4 +114,25 @@
         </div>
     </div>
 </div>
+
+<style>
+    label,
+    .form-label,
+    .form-text,
+    .form-control,
+    .form-select {
+        color: #f8f9fa;
+    }
+
+    .form-control,
+    .form-select {
+        background-color: #04101d;
+        border-color: #27364a;
+    }
+
+    .form-control::placeholder {
+        color: #adb5bd;
+    }
+</style>
+
 @endsection
