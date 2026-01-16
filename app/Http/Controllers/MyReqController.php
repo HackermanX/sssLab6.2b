@@ -10,7 +10,7 @@ use App\Models\GPUbench;
 
 class ComparePerformance
 {
-    public function compare(FetchReq $pc, object $game): array   // ← CHANGED
+    public function compare(FetchReq $pc, object $game): array
     {
         $pcCpuScore = $pc->cpu?->score ?? 0;
         $pcGpuScore = $pc->gpu?->score ?? 0;
@@ -66,9 +66,13 @@ class MyReqController extends Controller
             'STORAGE' => ['required', 'string', 'max:255'],
             'RAM'     => ['required', 'string', 'max:255'],
             'appId'   => [
-                'required',
+                'nullable',
                 'numeric',
                 function ($attribute, $value, $fail) use ($steamService) {
+                    if ($value === null || $value === '') {
+                        return;
+                    }
+                
                     $req = $steamService->getRequirements((int) $value);
 
                     if (! $req || empty($req['minimum'])) {
@@ -90,61 +94,8 @@ class MyReqController extends Controller
             'STORAGE' => $data['STORAGE'],
         ]);
 
-        $steamRequirements = $steamService->getRequirements((int) $data['appId']);
-
-        $comparison = null;
-        $gameDebug  = null;
-
-        $minParsed = $steamRequirements['minimum'] ?? null;
-
-        if ($minParsed) {
-
-            [$cpuReqScore, $gpuReqScore, $ramReqGb] =
-                $steamService->scoresFromParsed($minParsed);
-
-            $gameReq = (object) [
-                'min_cpu_score' => $cpuReqScore ?? 0,
-                'min_gpu_score' => $gpuReqScore ?? 0,
-                'min_ram_gb'    => $ramReqGb    ?? 0,
-            ];
-
-            $comparator = new ComparePerformance();
-            $comparison = $comparator->compare($mySpecs, $gameReq);
-
-            $gameDebug = [
-                'appid'          => (int) $data['appId'],
-                'minimum_parsed' => $minParsed,
-                'min_cpu_score'  => $cpuReqScore,
-                'min_gpu_score'  => $gpuReqScore,
-                'min_ram_gb'     => $ramReqGb,
-            ];
-        }
-        // ---------------------------------------------------------------------
-
-        $cpus = CPUbench::orderBy('score')->get();
-        $gpus = GPUbench::orderBy('score')->get();
-
-        $pcDebug = [
-            'cpu_id'    => $mySpecs->cpu_id,
-            'gpu_id'    => $mySpecs->gpu_id,
-            'CPU'       => $mySpecs->CPU,
-            'GPU'       => $mySpecs->GPU,
-            'RAM'       => $mySpecs->RAM,
-            'STORAGE'   => $mySpecs->STORAGE,
-            'cpu_score' => $mySpecs->cpu?->score,
-            'gpu_score' => $mySpecs->gpu?->score,
-        ];
-
-        return view('main', [
-            'mySpecs'           => $mySpecs,
-            'steamRequirements' => $steamRequirements,
-            'comparison'        => $comparison,
-            'appId'             => $data['appId'],
-            'cpus'              => $cpus,
-            'gpus'              => $gpus,
-            'pcDebug'           => $pcDebug,
-            'gameDebug'         => $gameDebug,
-        ]);
+        session(['current_specs_id' => $mySpecs->id]);
+        return redirect()->route('games.index');
     }
 
     public function destroy(FetchReq $spec)

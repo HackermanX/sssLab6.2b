@@ -20,12 +20,11 @@ Route::get('/', function () {
 
 use App\Services\SteamService;
 
-Route::get('/steam/{appId}', function ($appId, SteamService $steamService) {
-    return response()->json($steamService->getRequirements($appId));
-});
-
 Route::get('/pc-reqs', [MyReqController::class, 'showForm'])->name('main.form');
 Route::post('/pc-reqs', [MyReqController::class, 'storeAndShow'])->name('main.store');
+Route::delete('/pc-reqs', [MyReqController::class, 'destroy'])->name('main.destroy');
 
-Route::delete('/pc-reqs/', [MyReqController::class, 'destroy'])
-    ->name('main.destroy');
+use App\Http\Controllers\GameBrowserController;
+
+Route::get('/games', [GameBrowserController::class, 'index'])->name('games.index');
+Route::get('/games/{game:slug}', [GameBrowserController::class, 'show'])->name('games.show');
