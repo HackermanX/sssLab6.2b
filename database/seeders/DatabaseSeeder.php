@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
         CpuBenchmarkSeeder::class,
         GpuBenchmarkSeeder::class,
+        GameRequirementsSeeder::class,
         ]);
     }
 }

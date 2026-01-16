@@ -20,6 +20,7 @@
             </div>
         @endif
 
+        {{-- Filters --}}
         <form method="GET" action="{{ route('games.index') }}" class="card card-dark mb-4 p-3">
             <div class="row g-3 align-items-end">
                 <div class="col-md-4">
@@ -57,64 +58,40 @@
             </div>
         </form>
 
-        @php
-            $featured = [
-                271590 => [
-                    'title' => 'GTA V',
-                    'year'  => 2015,
-                    'image' => 'https://cdn.akamai.steamstatic.com/steam/apps/271590/header.jpg',
-                ],
-                730 => [
-                    'title' => 'Counter-Strike 2',
-                    'year'  => 2012,
-                    'image' => 'https://cdn.akamai.steamstatic.com/steam/apps/730/header.jpg',
-                ],
-                1245620 => [
-                    'title' => 'Elden Ring',
-                    'year'  => 2022,
-                    'image' => 'https://cdn.akamai.steamstatic.com/steam/apps/1245620/header.jpg',
-                ],
-                1091500 => [
-                    'title' => 'Cyberpunk 2077',
-                    'year'  => 2020,
-                    'image' => 'https://cdn.akamai.steamstatic.com/steam/apps/1091500/header.jpg',
-                ],
-            ];
-        @endphp
-
+        {{-- Featured game cards --}}
         <div class="row row-cols-1 row-cols-md-2 g-4">
             @php $hasFeatured = false; @endphp
 
             @foreach ($games as $game)
-                @php $hasFeatured = true; @endphp
+                @continue(! isset($featured[$game->appid]))
 
                 @php
+                    $hasFeatured = true;
                     $cmp    = $comparisons[$game->id] ?? null;
                     $ok     = $cmp['ok'] ?? false;
                     $border = $mySpecs ? ($ok ? 'border-success' : 'border-danger') : '';
-                        $data = $featured[$game->appid] ?? [
-                            'title' => $game->name,
-                            'year'  => $game->year,
-                            'image' => null,
-                        ];
+                    $data   = $featured[$game->appid];
                 @endphp
 
                 <div class="col">
-                    <a href="{{ route('games.show', ['game' => $game->id]) }}" class="text-decoration-none">
+                    <a href="{{ route('games.show', ['id' => $game->id]) }}" class="text-decoration-none">
                         <div class="card card-dark h-100 overflow-hidden {{ $border }}">
                             <div class="position-relative">
                                 <img src="{{ $data['image'] }}"
                                      class="w-100"
                                      style="height: 180px; object-fit: cover;"
                                      alt="{{ $data['title'] }} banner">
+
                                 <div class="position-absolute top-0 start-0 w-100 h-100"
                                      style="background: linear-gradient(to top, rgba(15,23,42,0.9), rgba(15,23,42,0.1));">
                                 </div>
+
                                 <div class="position-absolute bottom-0 start-0 p-3">
                                     <h3 class="h5 mb-1 text-light">{{ $data['title'] }}</h3>
                                     <span class="text-muted small">{{ $data['year'] }}</span>
                                 </div>
                             </div>
+
                             @if ($mySpecs && $cmp)
                                 <div class="card-body small">
                                     @if ($ok)

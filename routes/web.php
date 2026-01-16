@@ -27,4 +27,8 @@ Route::delete('/pc-reqs', [MyReqController::class, 'destroy'])->name('main.destr
 use App\Http\Controllers\GameBrowserController;
 
 Route::get('/games', [GameBrowserController::class, 'index'])->name('games.index');
-Route::get('/games/{game:slug}', [GameBrowserController::class, 'show'])->name('games.show');
+Route::get('/games/{id}', [GameBrowserController::class, 'show'])->name('games.show');
+
+Route::get('/debug/game/{id}', function ($id) {
+    return \App\Models\GameRequirement::find($id) ?? 'null';
+});

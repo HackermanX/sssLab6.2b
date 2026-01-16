@@ -11,10 +11,13 @@ class GameBrowserController extends Controller
 {
     public function index(Request $request, ComparePerformance $comparator)
     {
-        $specId  = session('current_specs_id');
-        $mySpecs = $specId ? FetchReq::with(['cpu','gpu'])->find($specId) : null;
+        $featured       = config('featured_games');
+        $featuredAppids = array_keys($featured);
 
-        $query = GameRequirement::query();
+        $specId  = session('current_specs_id');
+        $mySpecs = $specId ? FetchReq::with(['cpu', 'gpu'])->find($specId) : null;
+
+        $query = GameRequirement::whereIn('appid', $featuredAppids);
 
         if ($search = $request->input('q')) {
             $query->where('name', 'like', '%'.$search.'%');
@@ -26,9 +29,10 @@ class GameBrowserController extends Controller
             $query->where('year', '<=', $maxYear);
         }
 
-        $sort = $request->input('sort', 'name');
-        $dir  = $request->input('dir', 'asc');
-        $allowed = ['name','year','min_cpu_score','min_gpu_score','min_ram_gb'];
+        $sort    = $request->input('sort', 'name');
+        $dir     = $request->input('dir', 'asc');
+        $allowed = ['name', 'year', 'min_cpu_score', 'min_gpu_score', 'min_ram_gb'];
+
         if (! in_array($sort, $allowed, true)) {
             $sort = 'name';
         }
@@ -36,7 +40,7 @@ class GameBrowserController extends Controller
 
         $query->orderBy($sort, $dir);
 
-        $games = $query->paginate(12)->appends($request->query());
+        $games = $query->get();
 
         $comparisons = [];
         if ($mySpecs) {
@@ -45,16 +49,31 @@ class GameBrowserController extends Controller
             }
         }
 
-        return view('games.index', compact('games','mySpecs','comparisons','sort','dir'));
+        return view('games.index', [
+            'games'        => $games,
+            'mySpecs'      => $mySpecs,
+            'comparisons'  => $comparisons,
+            'sort'         => $sort,
+            'dir'          => $dir,
+            'featured'     => $featured,
+        ]);
     }
 
-    public function show(GameRequirement $game, ComparePerformance $comparator)
+    public function show(int $id, ComparePerformance $comparator)
     {
+        $game = GameRequirement::findOrFail($id);
+
         $specId  = session('current_specs_id');
-        $mySpecs = $specId ? FetchReq::with(['cpu','gpu'])->find($specId) : null;
+        $mySpecs = $specId ? FetchReq::with(['cpu', 'gpu'])->find($specId) : null;
 
-        $comparison = $mySpecs ? $comparator->compare($mySpecs, $game) : null;
+        $comparison = $mySpecs
+            ? $comparator->compare($mySpecs, $game)
+            : null;
 
-        return view('games.show', compact('game','mySpecs','comparison'));
+        return view('games.show', [
+            'game'       => $game,
+            'mySpecs'    => $mySpecs,
+            'comparison' => $comparison,
+        ]);
     }
 }
